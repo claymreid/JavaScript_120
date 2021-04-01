@@ -28,6 +28,10 @@ class Square {
 
 class Board {
   constructor() {
+    this.reset();
+  }
+
+  reset() {
     this.squares = {};
     for (let counter = 1; counter <= 9; ++counter) {
       this.squares[String(counter)] = new Square();
@@ -103,14 +107,14 @@ class Computer extends Player {
 
 class TTTGame {
   static POSSIBLE_WINNING_ROWS = [
-    [ "1", "2", "3" ],            // top row of board
-    [ "4", "5", "6" ],            // center row of board
-    [ "7", "8", "9" ],            // bottom row of board
-    [ "1", "4", "7" ],            // left column of board
-    [ "2", "5", "8" ],            // middle column of board
-    [ "3", "6", "9" ],            // right column of board
-    [ "1", "5", "9" ],            // diagonal: top-left to bottom-right
-    [ "3", "5", "7" ],            // diagonal: bottom-left to top-right
+    [ "1", "2", "3" ],
+    [ "4", "5", "6" ],
+    [ "7", "8", "9" ],
+    [ "1", "4", "7" ],
+    [ "2", "5", "8" ],
+    [ "3", "6", "9" ],
+    [ "1", "5", "9" ],
+    [ "3", "5", "7" ],
   ];
 
   constructor() {
@@ -119,9 +123,36 @@ class TTTGame {
     this.computer = new Computer();
   }
 
+  playAgain() {
+    let answer;
+
+    while (true) {
+      answer = readline.question(`Would you like to play again? (y/n)`);
+      answer = answer[0].toLowerCase();
+
+      if (["y", "n"].includes(answer)) break;
+
+      console.log(`Incorrect input, please choose (y/n).`);
+    }
+    console.clear();
+    return answer === 'y';
+    }
+
   play() {
     this.displayWelcomeMessage();
 
+    while (true) {
+      this.playOnce();
+      if (!this.playAgain()) break;
+
+      console.log("Again!");
+    }
+
+    this.displayGoodbyeMessage();
+  }
+
+  playOnce() {
+    this.board.reset();
     this.board.display();
     while (true) {
       this.humanMoves();
@@ -135,8 +166,7 @@ class TTTGame {
 
     this.board.displayWithClear();
     this.displayResults();
-    this.displayGoodbyeMessage();
-  }
+ }
 
   displayWelcomeMessage() {
     console.clear();
@@ -158,12 +188,31 @@ class TTTGame {
     }
   }
 
+  static joinOr(validChoices, punc = ',', conj = 'or') {
+    let len = validChoices.length;
+    let validChoicesString = '';
+
+    for (let idx = 0; idx < len; idx ++) {
+
+      if (len < 2) {
+        return validChoices.join('');
+      } else if (idx < len - 2) {
+        validChoicesString += validChoices[idx] + punc + ' ';
+      } else if (idx == len - 2) {
+        validChoicesString += validChoices[idx];
+      } else {
+        validChoicesString += ' ' + conj + ' ' + validChoices[idx];
+      }
+    }
+    return validChoicesString;
+  }
+
   humanMoves() {
     let choice;
 
     while (true) {
       let validChoices = this.board.unusedSquares();
-      const prompt = `Choose a square (${validChoices.join(", ")}): `;
+      const prompt = `Choose a square (${TTTGame.joinOr(validChoices)}): `;
       choice = readline.question(prompt);
 
       if (validChoices.includes(choice)) break;
@@ -186,6 +235,16 @@ class TTTGame {
     this.board.markSquareAt(choice, this.computer.getMarker());
   }
 
+  computerDefense(line, board, marker) {
+    let markersInLine = line.map(square => board[square]);
+
+    if (markersInLine.filter(val => val === marker).length === 2) {
+      let unusedSquare = line.find(square => board[square] === INITIAL_MARKER);
+      if (unusedSquare !== undefined) {
+        return unusedSquare;
+      }
+  }
+
   gameOver() {
     return this.board.isFull() || this.someoneWon();
   }
@@ -199,6 +258,7 @@ class TTTGame {
       return this.board.countMarkersFor(player, row) === 3;
     });
   }
+
 }
 
 let game = new TTTGame();
