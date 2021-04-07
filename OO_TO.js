@@ -34,7 +34,6 @@ class Deck {
     return card;
   }
 }
-///////////////////////////////////////////////////////
 
 class Participant {
   constructor() {
@@ -70,14 +69,13 @@ class Participant {
   }
 }
 
-/////////////////////////////////////////
 
 class Dealer extends Participant {
   constructor() {
     super();
   }
 }
-//////////////////////////////////////
+
 
 class TwentyOneGame {
   constructor() {
@@ -87,7 +85,6 @@ class TwentyOneGame {
   }
 
   play() {
-    //SPIKE
     this.displayWelcomeMessage();
     this.playMatch();
     this.displayGoodbyeMessage();
